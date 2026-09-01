@@ -77,13 +77,23 @@ export async function onRequestPost(context) {
 
     }
 
-    const result=await response.json();
+    const result = await response.json();
 
-    const text=result.output_text;
+const text = result.output
+  ?.flatMap(item => item.content || [])
+  ?.find(item => item.type === "output_text")
+  ?.text;
 
-    const data=JSON.parse(text);
+if (!text) {
+  console.log(JSON.stringify(result));
+  return json({
+    error: "OpenAI no devolvió texto válido."
+  }, 500);
+}
 
-    return json(data);
+const data = JSON.parse(text);
+
+return json(data);
 
   } catch(e){
 
