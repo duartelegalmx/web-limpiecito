@@ -1,13 +1,8 @@
-/* =========================================================
-   DUARTE LEGAL
-   Main JavaScript
-   ========================================================= */
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =======================================================
-     MOBILE NAVIGATION
-     ======================================================= */
+  /* =====================================================
+     MENÚ MÓVIL
+     ===================================================== */
 
   const menuToggle = document.getElementById("menu-toggle");
   const mainNav = document.getElementById("main-nav");
@@ -16,14 +11,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     menuToggle.addEventListener("click", () => {
 
-      const isOpen = mainNav.classList.toggle("active");
+      const open = mainNav.classList.toggle("active");
 
       menuToggle.setAttribute(
         "aria-expanded",
-        isOpen ? "true" : "false"
+        open ? "true" : "false"
       );
 
-      menuToggle.textContent = isOpen ? "✕" : "☰";
+      menuToggle.textContent = open ? "✕" : "☰";
+
     });
 
 
@@ -39,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
         menuToggle.textContent = "☰";
+
       });
 
     });
@@ -46,15 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /* =======================================================
-     SCROLL REVEAL
-     ======================================================= */
+  /* =====================================================
+     ANIMACIONES AL HACER SCROLL
+     ===================================================== */
 
   const revealElements = document.querySelectorAll(".reveal");
 
   if ("IntersectionObserver" in window) {
 
-    const revealObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       entries => {
 
         entries.forEach(entry => {
@@ -63,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             entry.target.classList.add("visible");
 
-            revealObserver.unobserve(entry.target);
+            observer.unobserve(entry.target);
 
           }
 
@@ -77,303 +74,292 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     revealElements.forEach(element => {
-      revealObserver.observe(element);
+
+      observer.observe(element);
+
     });
 
   } else {
 
     revealElements.forEach(element => {
+
       element.classList.add("visible");
+
     });
 
   }
 
 
-  /* =======================================================
-     AI DIAGNOSIS
-     ======================================================= */
+  /* =====================================================
+     DIAGNÓSTICO IA
+     ===================================================== */
 
-  const diagnosisForm = document.getElementById("diag-form");
-  const caseText = document.getElementById("case-text");
-  const analyzeButton = document.getElementById("analyze-btn");
+  const diagnosisForm =
+    document.getElementById("diag-form");
 
-  const statusLabel = document.getElementById("status-label");
-  const errorBox = document.getElementById("diag-error");
+  const caseText =
+    document.getElementById("case-text");
 
-  const resultBox = document.getElementById("diag-result");
+  const analyzeButton =
+    document.getElementById("analyze-btn");
 
-  const gaugeArc = document.getElementById("gauge-arc");
-  const gaugeText = document.getElementById("gauge-text");
+  const statusLabel =
+    document.getElementById("status-label");
 
-  const resultTitle = document.getElementById("result-title");
-  const resultBadge = document.getElementById("result-badge");
-  const resultSummary = document.getElementById("result-summary");
+  const errorBox =
+    document.getElementById("diag-error");
 
-  const resultFactors = document.getElementById("result-factors");
-  const resultNext = document.getElementById("result-next");
+  const resultBox =
+    document.getElementById("diag-result");
 
-  const continuar = document.getElementById("continuar");
-  const leadForm = document.getElementById("lead-form");
+  const gaugeText =
+    document.getElementById("gauge-text");
+
+  const resultBadge =
+    document.getElementById("result-badge");
+
+  const resultTitle =
+    document.getElementById("result-title");
+
+  const resultSummary =
+    document.getElementById("result-summary");
+
+  const resultFactors =
+    document.getElementById("result-factors");
+
+  const resultNext =
+    document.getElementById("result-next");
+
+  const continuar =
+    document.getElementById("continuar");
 
 
   let currentDiagnosis = null;
-  let currentLeadId = null;
 
 
   if (diagnosisForm) {
 
-    diagnosisForm.addEventListener("submit", async event => {
+    diagnosisForm.addEventListener(
+      "submit",
+      async event => {
 
-      event.preventDefault();
-
-      const text = caseText.value.trim();
-
-      /* ---------------------------------------------------
-         VALIDATION
-         --------------------------------------------------- */
-
-      if (!text) {
-
-        showError(
-          "Cuéntanos brevemente qué está ocurriendo antes de analizar tu caso."
-        );
-
-        return;
-      }
+        event.preventDefault();
 
 
-      if (text.length < 20) {
-
-        showError(
-          "Necesitamos un poco más de contexto para realizar una evaluación útil."
-        );
-
-        return;
-      }
+        const text =
+          caseText.value.trim();
 
 
-      /* ---------------------------------------------------
-         RESET UI
-         --------------------------------------------------- */
+        /* ---------------------------------------------
+           VALIDACIÓN
+           --------------------------------------------- */
 
-      hideError();
+        if (text.length < 20) {
 
-      resultBox.style.display = "none";
-
-      if (continuar) {
-        continuar.hidden = true;
-      }
-
-      setLoadingState(true);
-
-
-      try {
-
-        /* -------------------------------------------------
-           API REQUEST
-
-           El backend actual espera "caso".
-           Conservamos también "case" y "query" para
-           compatibilidad futura.
-           ------------------------------------------------- */
-
-        const response = await fetch("/api/analyze", {
-
-          method: "POST",
-
-          headers: {
-            "Content-Type": "application/json"
-          },
-
-          body: JSON.stringify({
-            caso: text,
-            case: text,
-            query: text
-          })
-
-        });
-
-
-        let data = null;
-
-        try {
-          data = await response.json();
-        } catch {
-          throw new Error(
-            "El servidor no devolvió una respuesta válida."
+          showError(
+            "Necesitamos un poco más de contexto para realizar una evaluación útil."
           );
-        }
 
-
-        if (!response.ok) {
-
-          throw new Error(
-            data?.error ||
-            "No fue posible analizar el caso."
-          );
+          return;
 
         }
 
 
-        if (!data) {
-
-          throw new Error(
-            "No se recibió información del diagnóstico."
-          );
-
-        }
+        hideError();
 
 
-        /* -------------------------------------------------
-           SAVE CURRENT DIAGNOSIS
-           ------------------------------------------------- */
+        resultBox.style.display = "none";
 
-        currentDiagnosis = {
-          query: text,
-          result: data,
-          date: new Date().toISOString()
-        };
-
-
-        try {
-
-          sessionStorage.setItem(
-            "duarte_diagnosis",
-            JSON.stringify(currentDiagnosis)
-          );
-
-        } catch (storageError) {
-
-          console.warn(
-            "No fue posible guardar el diagnóstico localmente.",
-            storageError
-          );
-
-        }
-
-
-        /* -------------------------------------------------
-           RENDER RESULT
-           ------------------------------------------------- */
-
-        renderDiagnosis(data);
-
-        resultBox.style.display = "block";
-
-
-        /* -------------------------------------------------
-           SHOW LEAD CAPTURE
-           ------------------------------------------------- */
 
         if (continuar) {
 
-          continuar.hidden = false;
-
-          setTimeout(() => {
-
-            continuar.scrollIntoView({
-              behavior: "smooth",
-              block: "start"
-            });
-
-          }, 250);
+          continuar.hidden = true;
 
         }
 
 
-      } catch (error) {
+        /* ---------------------------------------------
+           ESTADO DE CARGA
+           --------------------------------------------- */
 
-        console.error("Duarte Diagnosis Error:", error);
+        analyzeButton.disabled = true;
 
-        showError(
-          error.message ||
-          "Ocurrió un error al analizar tu caso. Inténtalo nuevamente."
-        );
+        analyzeButton.textContent =
+          "Analizando...";
 
-      } finally {
 
-        setLoadingState(false);
+        if (statusLabel) {
+
+          statusLabel.textContent =
+            "Estamos revisando los elementos principales de tu caso...";
+
+        }
+
+
+        try {
+
+          /* -------------------------------------------
+             LLAMADA AL BACKEND
+
+             IMPORTANTE:
+             enviamos "caso" porque ese es el parámetro
+             que utiliza actualmente analyze.js.
+             ------------------------------------------- */
+
+          const response =
+            await fetch("/api/analyze", {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type": "application/json"
+              },
+
+              body: JSON.stringify({
+
+                caso: text
+
+              })
+
+            });
+
+
+          let data;
+
+
+          try {
+
+            data = await response.json();
+
+          } catch {
+
+            throw new Error(
+              "El servidor no devolvió una respuesta válida."
+            );
+
+          }
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              data?.error ||
+              "No fue posible analizar el caso."
+            );
+
+          }
+
+
+          /* -------------------------------------------
+             GUARDAR CONTEXTO DEL DIAGNÓSTICO
+             ------------------------------------------- */
+
+          currentDiagnosis = {
+
+            query: text,
+
+            result: data,
+
+            date: new Date().toISOString()
+
+          };
+
+
+          try {
+
+            sessionStorage.setItem(
+              "duarte_diagnosis",
+              JSON.stringify(currentDiagnosis)
+            );
+
+          } catch {
+
+            /* No hacemos nada si el navegador
+               bloquea sessionStorage */
+
+          }
+
+
+          /* -------------------------------------------
+             MOSTRAR RESULTADO
+             ------------------------------------------- */
+
+          renderDiagnosis(data);
+
+
+          resultBox.style.display =
+            "block";
+
+
+          /* -------------------------------------------
+             MOSTRAR CAPTURA DEL LEAD
+             ------------------------------------------- */
+
+          if (continuar) {
+
+            continuar.hidden = false;
+
+            setTimeout(() => {
+
+              continuar.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+              });
+
+            }, 250);
+
+          }
+
+
+        } catch (error) {
+
+          console.error(
+            "Error en diagnóstico:",
+            error
+          );
+
+
+          showError(
+            error.message ||
+            "Ocurrió un error al analizar tu caso."
+          );
+
+
+        } finally {
+
+          analyzeButton.disabled =
+            false;
+
+
+          analyzeButton.innerHTML =
+            "Analizar mi caso <span>→</span>";
+
+
+          if (statusLabel) {
+
+            statusLabel.textContent =
+              "Evaluación preliminar asistida por IA.";
+
+          }
+
+        }
 
       }
-
-    });
+    );
 
   }
 
 
-  /* =======================================================
-     LOADING STATE
-     ======================================================= */
-
-  function setLoadingState(isLoading) {
-
-    if (!analyzeButton) {
-      return;
-    }
-
-
-    analyzeButton.disabled = isLoading;
-
-
-    if (isLoading) {
-
-      analyzeButton.dataset.originalText =
-        analyzeButton.textContent;
-
-      analyzeButton.textContent =
-        "Analizando...";
-
-      if (statusLabel) {
-
-        statusLabel.textContent =
-          "Estamos revisando los elementos principales de tu caso...";
-
-      }
-
-    } else {
-
-      analyzeButton.textContent =
-        analyzeButton.dataset.originalText ||
-        "Analizar mi caso";
-
-      if (statusLabel) {
-
-        statusLabel.textContent =
-          "Tu información será analizada para generar una evaluación preliminar.";
-
-      }
-
-    }
-
-  }
-
-
-  /* =======================================================
-     RENDER DIAGNOSIS
-     ======================================================= */
+  /* =====================================================
+     RENDER DEL DIAGNÓSTICO
+     ===================================================== */
 
   function renderDiagnosis(data) {
 
-    const viability = normalizeViability(
-      data.viabilidad
-    );
-
-
-    /* -----------------------------------------------------
-       GAUGE
-       ----------------------------------------------------- */
-
-    if (gaugeArc) {
-
-      const circumference = 440;
-
-      const offset =
-        circumference -
-        (circumference * viability / 100);
-
-      gaugeArc.style.strokeDashoffset = offset;
-
-    }
+    const viability =
+      normalizeViability(
+        data.viabilidad
+      );
 
 
     if (gaugeText) {
@@ -384,211 +370,95 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
 
-    /* -----------------------------------------------------
-       TITLE
-       ----------------------------------------------------- */
+    /* ---------------------------------------------
+       CLASIFICACIÓN
+       --------------------------------------------- */
+
+    if (resultBadge) {
+
+      if (viability >= 70) {
+
+        resultBadge.textContent =
+          "Perspectiva favorable";
+
+      } else if (viability >= 40) {
+
+        resultBadge.textContent =
+          "Requiere revisión";
+
+      } else {
+
+        resultBadge.textContent =
+          "Atención prioritaria";
+
+      }
+
+    }
+
+
+    /* ---------------------------------------------
+       TÍTULO
+       --------------------------------------------- */
 
     if (resultTitle) {
 
       resultTitle.textContent =
         data.titulo ||
-        data.title ||
         "Evaluación preliminar";
 
     }
 
 
-    /* -----------------------------------------------------
-       BADGE
-       ----------------------------------------------------- */
-
-    if (resultBadge) {
-
-      resultBadge.textContent =
-        getBadgeText(viability);
-
-    }
-
-
-    /* -----------------------------------------------------
-       SUMMARY
-       ----------------------------------------------------- */
+    /* ---------------------------------------------
+       RESUMEN
+       --------------------------------------------- */
 
     if (resultSummary) {
 
       resultSummary.textContent =
         data.resumen ||
-        data.summary ||
         "La evaluación identifica elementos que conviene revisar con mayor detalle.";
 
     }
 
 
-    /* -----------------------------------------------------
-       FACTORS
-       ----------------------------------------------------- */
+    /* ---------------------------------------------
+       FACTORES
+       --------------------------------------------- */
 
-    if (resultFactors) {
-
-      resultFactors.innerHTML = "";
-
-      const heading = document.createElement("h4");
-
-      heading.textContent =
-        "Lo que identificamos";
-
-      resultFactors.appendChild(heading);
+    fillResultBlock(
+      resultFactors,
+      "Lo que identificamos",
+      data.factores ||
+      data.factors ||
+      data.identificado
+    );
 
 
-      const content =
-        data.factores ||
-        data.factors ||
-        data.identificado ||
-        data.identificados;
+    /* ---------------------------------------------
+       SIGUIENTE PASO
+       --------------------------------------------- */
 
-
-      appendFlexibleContent(
-        resultFactors,
-        content
-      );
-
-    }
-
-
-    /* -----------------------------------------------------
-       NEXT STEP
-       ----------------------------------------------------- */
-
-    if (resultNext) {
-
-      resultNext.innerHTML = "";
-
-      const heading = document.createElement("h4");
-
-      heading.textContent =
-        "Siguiente paso";
-
-      resultNext.appendChild(heading);
-
-
-      const content =
-        data.siguiente_paso ||
-        data.next_step ||
-        data.next ||
-        "Conviene revisar el caso con mayor información antes de tomar una decisión.";
-
-      appendFlexibleContent(
-        resultNext,
-        content
-      );
-
-    }
+    fillResultBlock(
+      resultNext,
+      "Siguiente paso",
+      data.siguiente_paso ||
+      data.next_step ||
+      "Conviene revisar el caso con mayor información antes de tomar una decisión."
+    );
 
   }
 
 
-  /* =======================================================
-     FLEXIBLE CONTENT
-     ======================================================= */
-
-  function appendFlexibleContent(container, content) {
-
-    if (!content) {
-
-      const paragraph =
-        document.createElement("p");
-
-      paragraph.textContent =
-        "No hay información suficiente para desarrollar este punto.";
-
-      container.appendChild(paragraph);
-
-      return;
-    }
-
-
-    if (Array.isArray(content)) {
-
-      const list =
-        document.createElement("ul");
-
-      content.forEach(item => {
-
-        const li =
-          document.createElement("li");
-
-        li.textContent =
-          typeof item === "string"
-            ? item
-            : JSON.stringify(item);
-
-        list.appendChild(li);
-
-      });
-
-      container.appendChild(list);
-
-      return;
-    }
-
-
-    if (typeof content === "object") {
-
-      const list =
-        document.createElement("ul");
-
-      Object.entries(content).forEach(
-        ([key, value]) => {
-
-          const li =
-            document.createElement("li");
-
-          const label =
-            document.createElement("strong");
-
-          label.textContent =
-            `${key}: `;
-
-          li.appendChild(label);
-
-          li.appendChild(
-            document.createTextNode(
-              typeof value === "string"
-                ? value
-                : JSON.stringify(value)
-            )
-          );
-
-          list.appendChild(li);
-
-        }
-      );
-
-      container.appendChild(list);
-
-      return;
-    }
-
-
-    const paragraph =
-      document.createElement("p");
-
-    paragraph.textContent =
-      String(content);
-
-    container.appendChild(paragraph);
-
-  }
-
-
-  /* =======================================================
-     VIABILITY
-     ======================================================= */
+  /* =====================================================
+     NORMALIZAR VIABILIDAD
+     ===================================================== */
 
   function normalizeViability(value) {
 
     let number =
       Number(value);
+
 
     if (Number.isNaN(number)) {
 
@@ -596,63 +466,192 @@ document.addEventListener("DOMContentLoaded", () => {
         String(value || "")
           .toLowerCase();
 
+
       if (
         text.includes("alta") ||
-        text.includes("favorable") ||
         text.includes("favorable")
       ) {
+
         return 80;
+
       }
+
 
       if (
         text.includes("media") ||
         text.includes("moderada")
       ) {
+
         return 55;
+
       }
+
 
       if (
         text.includes("baja") ||
         text.includes("desfavorable")
       ) {
+
         return 30;
+
       }
 
+
       return 50;
+
     }
 
 
     if (number <= 1) {
-      number = number * 100;
+
+      number *= 100;
+
     }
 
 
     return Math.max(
       0,
-      Math.min(100, Math.round(number))
+      Math.min(
+        100,
+        Math.round(number)
+      )
     );
 
   }
 
 
-  function getBadgeText(value) {
+  /* =====================================================
+     MOSTRAR BLOQUES DEL RESULTADO
+     ===================================================== */
 
-    if (value >= 70) {
-      return "Perspectiva favorable";
+  function fillResultBlock(
+    container,
+    heading,
+    content
+  ) {
+
+    if (!container) {
+      return;
     }
 
-    if (value >= 40) {
-      return "Requiere revisión";
+
+    container.innerHTML = "";
+
+
+    const headingElement =
+      document.createElement("h4");
+
+
+    headingElement.textContent =
+      heading;
+
+
+    container.appendChild(
+      headingElement
+    );
+
+
+    if (!content) {
+
+      const paragraph =
+        document.createElement("p");
+
+
+      paragraph.textContent =
+        "No hay información suficiente para desarrollar este punto.";
+
+
+      container.appendChild(
+        paragraph
+      );
+
+
+      return;
+
     }
 
-    return "Atención prioritaria";
+
+    /* ---------------------------------------------
+       SI ES UN ARRAY
+       --------------------------------------------- */
+
+    if (Array.isArray(content)) {
+
+      const list =
+        document.createElement("ul");
+
+
+      content.forEach(item => {
+
+        const listItem =
+          document.createElement("li");
+
+
+        if (
+          typeof item === "string"
+        ) {
+
+          listItem.textContent =
+            item;
+
+        } else {
+
+          listItem.textContent =
+            JSON.stringify(item);
+
+        }
+
+
+        list.appendChild(
+          listItem
+        );
+
+      });
+
+
+      container.appendChild(
+        list
+      );
+
+
+      return;
+
+    }
+
+
+    /* ---------------------------------------------
+       SI ES TEXTO
+       --------------------------------------------- */
+
+    const paragraph =
+      document.createElement("p");
+
+
+    if (
+      typeof content === "string"
+    ) {
+
+      paragraph.textContent =
+        content;
+
+    } else {
+
+      paragraph.textContent =
+        JSON.stringify(content);
+
+    }
+
+
+    container.appendChild(
+      paragraph
+    );
 
   }
 
 
-  /* =======================================================
-     ERROR HANDLING
-     ======================================================= */
+  /* =====================================================
+     MENSAJES DE ERROR
+     ===================================================== */
 
   function showError(message) {
 
@@ -660,8 +659,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+
     errorBox.textContent =
       message;
+
 
     errorBox.style.display =
       "block";
@@ -675,7 +676,10 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    errorBox.textContent = "";
+
+    errorBox.textContent =
+      "";
+
 
     errorBox.style.display =
       "none";
@@ -683,9 +687,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  /* =======================================================
-     LEAD CAPTURE
-     ======================================================= */
+  /* =====================================================
+     CAPTURA DEL LEAD
+     ===================================================== */
+
+  const leadForm =
+    document.getElementById("lead-form");
+
 
   if (leadForm) {
 
@@ -697,22 +705,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
         const name =
-          document.getElementById("lead-name")?.value.trim();
+          document
+            .getElementById("lead-name")
+            ?.value
+            .trim();
+
 
         const whatsapp =
-          document.getElementById("lead-whatsapp")?.value.trim();
+          document
+            .getElementById("lead-whatsapp")
+            ?.value
+            .trim();
+
 
         const email =
-          document.getElementById("lead-email")?.value.trim();
+          document
+            .getElementById("lead-email")
+            ?.value
+            .trim();
+
 
         const type =
-          document.getElementById("lead-type")?.value;
+          document
+            .getElementById("lead-type")
+            ?.value;
 
 
-        if (!name || !whatsapp || !type) {
+        /* ---------------------------------------------
+           VALIDACIÓN
+           --------------------------------------------- */
+
+        if (
+          !name ||
+          !whatsapp ||
+          !type
+        ) {
 
           alert(
-            "Por favor completa tu nombre, WhatsApp y tipo de usuario."
+            "Completa tu nombre, WhatsApp y tipo de usuario."
           );
 
           return;
@@ -720,35 +750,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
 
-        /* -------------------------------------------------
-           LEAD ID
+        /* ---------------------------------------------
+           CREAR ID DEL LEAD
+           --------------------------------------------- */
 
-           Esta versión genera el identificador en el
-           navegador. La conexión con base de datos/CRM
-           corresponde a la siguiente integración.
-           ------------------------------------------------- */
+        const leadId =
+          `DL-${Math.floor(
+            10000 +
+            Math.random() * 90000
+          )}`;
 
-        currentLeadId =
-          generateLeadId();
 
+        /* ---------------------------------------------
+           CREAR REGISTRO LOCAL
+
+           NOTA:
+           Esto es temporal.
+           La persistencia real se implementará
+           posteriormente en el backend.
+           --------------------------------------------- */
 
         const lead = {
 
-          id: currentLeadId,
+          id: leadId,
 
           name,
 
           whatsapp,
 
-          email: email || null,
+          email:
+            email || null,
 
           type,
 
           original_case:
-            currentDiagnosis?.query || caseText?.value || "",
+            currentDiagnosis?.query ||
+            caseText?.value ||
+            "",
 
           diagnosis:
-            currentDiagnosis?.result || null,
+            currentDiagnosis?.result ||
+            null,
 
           created_at:
             new Date().toISOString(),
@@ -766,34 +808,34 @@ document.addEventListener("DOMContentLoaded", () => {
             JSON.stringify(lead)
           );
 
-        } catch (storageError) {
+        } catch {
 
-          console.warn(
-            "No fue posible guardar el lead localmente.",
-            storageError
-          );
+          /* El flujo de WhatsApp
+             continúa aunque sessionStorage
+             no esté disponible */
 
         }
 
 
-        /* -------------------------------------------------
+        /* ---------------------------------------------
            WHATSAPP
 
-           No mandamos el contenido jurídico completo.
-           Mandamos únicamente el ID para recuperar el
-           contexto posteriormente.
-           ------------------------------------------------- */
+           No enviamos el contenido jurídico
+           completo por WhatsApp.
 
-        const phone =
-          "526461510992";
-
+           Enviamos únicamente el ID para que
+           posteriormente el backend pueda
+           relacionarlo con el diagnóstico.
+           --------------------------------------------- */
 
         const message =
-          `Hola, quiero revisar con Duarte mi diagnóstico IA. ID: ${currentLeadId}`;
+          `Hola, quiero revisar con Duarte mi diagnóstico IA. ID: ${leadId}`;
 
 
         const whatsappUrl =
-          `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+          `https://wa.me/526461510992?text=${encodeURIComponent(
+            message
+          )}`;
 
 
         window.open(
@@ -803,25 +845,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
 
       }
-
     );
-
-  }
-
-
-  /* =======================================================
-     LEAD ID
-     ======================================================= */
-
-  function generateLeadId() {
-
-    const random =
-      Math.floor(
-        10000 +
-        Math.random() * 90000
-      );
-
-    return `DL-${random}`;
 
   }
 
