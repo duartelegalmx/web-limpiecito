@@ -1,16 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* =====================================================
+  /* =========================================================
      MENÚ MÓVIL
-     ===================================================== */
+  ========================================================= */
 
   const menuToggle = document.getElementById("menu-toggle");
   const mainNav = document.getElementById("main-nav");
 
   if (menuToggle && mainNav) {
-
     menuToggle.addEventListener("click", () => {
-
       const open = mainNav.classList.toggle("active");
 
       menuToggle.setAttribute(
@@ -18,834 +16,862 @@ document.addEventListener("DOMContentLoaded", () => {
         open ? "true" : "false"
       );
 
-      menuToggle.textContent = open ? "✕" : "☰";
-
+      menuToggle.textContent = open ? "×" : "☰";
     });
 
-
-    mainNav.querySelectorAll("a").forEach(link => {
-
+    mainNav.querySelectorAll("a").forEach((link) => {
       link.addEventListener("click", () => {
-
         mainNav.classList.remove("active");
-
-        menuToggle.setAttribute(
-          "aria-expanded",
-          "false"
-        );
-
+        menuToggle.setAttribute("aria-expanded", "false");
         menuToggle.textContent = "☰";
-
       });
-
     });
-
   }
 
 
-  /* =====================================================
-     ANIMACIONES AL HACER SCROLL
-     ===================================================== */
+  /* =========================================================
+     ANIMACIONES DE ENTRADA
+  ========================================================= */
 
   const revealElements = document.querySelectorAll(".reveal");
 
   if ("IntersectionObserver" in window) {
-
     const observer = new IntersectionObserver(
-      entries => {
-
-        entries.forEach(entry => {
-
+      (entries) => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
-
             entry.target.classList.add("visible");
-
             observer.unobserve(entry.target);
-
           }
-
         });
-
       },
       {
         threshold: 0.12
       }
     );
 
-
-    revealElements.forEach(element => {
-
+    revealElements.forEach((element) => {
       observer.observe(element);
-
     });
-
   } else {
-
-    revealElements.forEach(element => {
-
+    revealElements.forEach((element) => {
       element.classList.add("visible");
-
     });
-
   }
 
 
-  /* =====================================================
+  /* =========================================================
      DIAGNÓSTICO IA
-     ===================================================== */
+  ========================================================= */
 
-  const diagnosisForm =
-    document.getElementById("diag-form");
+  const diagForm = document.getElementById("diag-form");
+  const caseText = document.getElementById("case-text");
+  const analyzeBtn = document.getElementById("analyze-btn");
+  const resetBtn = document.getElementById("reset-btn");
 
-  const caseText =
-    document.getElementById("case-text");
+  const statusLabel = document.getElementById("status-label");
+  const diagError = document.getElementById("diag-error");
+  const diagResult = document.getElementById("diag-result");
 
-  const analyzeButton =
-    document.getElementById("analyze-btn");
+  const gaugeArc = document.getElementById("gauge-arc");
+  const gaugeText = document.getElementById("gauge-text");
 
-  const statusLabel =
-    document.getElementById("status-label");
+  const resultTitle = document.getElementById("result-title");
+  const resultBadge = document.getElementById("result-badge");
+  const resultSummary = document.getElementById("result-summary");
+  const resultFactors = document.getElementById("result-factors");
+  const resultNext = document.getElementById("result-next");
 
-  const errorBox =
-    document.getElementById("diag-error");
 
-  const resultBox =
-    document.getElementById("diag-result");
+  let lastDiagnosis = null;
+  let lastCase = "";
 
-  const gaugeText =
-    document.getElementById("gauge-text");
 
-  const resultBadge =
-    document.getElementById("result-badge");
+  function showError(message) {
+    if (!diagError) return;
 
-  const resultTitle =
-    document.getElementById("result-title");
-
-  const resultSummary =
-    document.getElementById("result-summary");
-
-  const resultFactors =
-    document.getElementById("result-factors");
-
-  const resultNext =
-    document.getElementById("result-next");
-
-  const continuar =
-    document.getElementById("continuar");
-
-
-  let currentDiagnosis = null;
-
-
-  if (diagnosisForm) {
-
-    diagnosisForm.addEventListener(
-      "submit",
-      async event => {
-
-        event.preventDefault();
-
-
-        const text =
-          caseText.value.trim();
-
-
-        /* ---------------------------------------------
-           VALIDACIÓN
-           --------------------------------------------- */
-
-        if (text.length < 20) {
-
-          showError(
-            "Necesitamos un poco más de contexto para realizar una evaluación útil."
-          );
-
-          return;
-
-        }
-
-
-        hideError();
-
-
-        resultBox.style.display = "none";
-
-
-        if (continuar) {
-
-          continuar.hidden = true;
-
-        }
-
-
-        /* ---------------------------------------------
-           ESTADO DE CARGA
-           --------------------------------------------- */
-
-        analyzeButton.disabled = true;
-
-        analyzeButton.textContent =
-          "Analizando...";
-
-
-        if (statusLabel) {
-
-          statusLabel.textContent =
-            "Estamos revisando los elementos principales de tu caso...";
-
-        }
-
-
-        try {
-
-          /* -------------------------------------------
-             LLAMADA AL BACKEND
-
-             IMPORTANTE:
-             enviamos "caso" porque ese es el parámetro
-             que utiliza actualmente analyze.js.
-             ------------------------------------------- */
-
-          const response =
-            await fetch("/api/analyze", {
-
-              method: "POST",
-
-              headers: {
-                "Content-Type": "application/json"
-              },
-
-              body: JSON.stringify({
-
-                caso: text
-
-              })
-
-            });
-
-
-          let data;
-
-
-          try {
-
-            data = await response.json();
-
-          } catch {
-
-            throw new Error(
-              "El servidor no devolvió una respuesta válida."
-            );
-
-          }
-
-
-          if (!response.ok) {
-
-            throw new Error(
-              data?.error ||
-              "No fue posible analizar el caso."
-            );
-
-          }
-
-
-          /* -------------------------------------------
-             GUARDAR CONTEXTO DEL DIAGNÓSTICO
-             ------------------------------------------- */
-
-          currentDiagnosis = {
-
-            query: text,
-
-            result: data,
-
-            date: new Date().toISOString()
-
-          };
-
-
-          try {
-
-            sessionStorage.setItem(
-              "duarte_diagnosis",
-              JSON.stringify(currentDiagnosis)
-            );
-
-          } catch {
-
-            /* No hacemos nada si el navegador
-               bloquea sessionStorage */
-
-          }
-
-
-          /* -------------------------------------------
-             MOSTRAR RESULTADO
-             ------------------------------------------- */
-
-          renderDiagnosis(data);
-
-
-          resultBox.style.display =
-            "block";
-
-
-          /* -------------------------------------------
-             MOSTRAR CAPTURA DEL LEAD
-             ------------------------------------------- */
-
-          if (continuar) {
-
-            continuar.hidden = false;
-
-            setTimeout(() => {
-
-              continuar.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-              });
-
-            }, 250);
-
-          }
-
-
-        } catch (error) {
-
-          console.error(
-            "Error en diagnóstico:",
-            error
-          );
-
-
-          showError(
-            error.message ||
-            "Ocurrió un error al analizar tu caso."
-          );
-
-
-        } finally {
-
-          analyzeButton.disabled =
-            false;
-
-
-          analyzeButton.innerHTML =
-            "Analizar mi caso <span>→</span>";
-
-
-          if (statusLabel) {
-
-            statusLabel.textContent =
-              "Evaluación preliminar asistida por IA.";
-
-          }
-
-        }
-
-      }
-    );
-
+    diagError.textContent = message;
+    diagError.hidden = false;
   }
 
 
-  /* =====================================================
-     RENDER DEL DIAGNÓSTICO
-     ===================================================== */
+  function clearError() {
+    if (!diagError) return;
+
+    diagError.textContent = "";
+    diagError.hidden = true;
+  }
+
+
+  function setLoading(loading) {
+    if (!analyzeBtn) return;
+
+    analyzeBtn.disabled = loading;
+
+    if (loading) {
+      analyzeBtn.dataset.originalText =
+        analyzeBtn.textContent;
+
+      analyzeBtn.textContent =
+        "Analizando…";
+
+      if (statusLabel) {
+        statusLabel.textContent =
+          "Duarte está analizando tu caso";
+      }
+    } else {
+      analyzeBtn.textContent =
+        analyzeBtn.dataset.originalText ||
+        "Evaluar mi caso";
+
+      if (statusLabel) {
+        statusLabel.textContent = "";
+      }
+    }
+  }
+
+
+  function normalizeViability(value) {
+    const number = Number(value);
+
+    if (Number.isNaN(number)) {
+      return 0;
+    }
+
+    return Math.max(0, Math.min(100, number));
+  }
+
+
+  function renderFactors(factors) {
+    if (!resultFactors) return;
+
+    resultFactors.innerHTML = "";
+
+    if (!Array.isArray(factors)) {
+      return;
+    }
+
+    factors.forEach((factor) => {
+      const li = document.createElement("li");
+
+      if (typeof factor === "string") {
+        li.textContent = factor;
+      } else if (factor && typeof factor === "object") {
+        li.textContent =
+          factor.text ||
+          factor.descripcion ||
+          factor.description ||
+          JSON.stringify(factor);
+      }
+
+      resultFactors.appendChild(li);
+    });
+  }
+
+
+  function renderGauge(value) {
+    if (!gaugeArc || !gaugeText) return;
+
+    const percentage = normalizeViability(value);
+
+    gaugeText.textContent =
+      `${Math.round(percentage)}%`;
+
+    /*
+      El arco se anima utilizando una circunferencia.
+      Si el SVG no tiene la medida esperada, simplemente
+      dejamos visible el porcentaje.
+    */
+
+    const length =
+      typeof gaugeArc.getTotalLength === "function"
+        ? gaugeArc.getTotalLength()
+        : 100;
+
+    gaugeArc.style.strokeDasharray = `${length}`;
+    gaugeArc.style.strokeDashoffset =
+      length - (length * percentage) / 100;
+  }
+
 
   function renderDiagnosis(data) {
+    if (!data) return;
 
-    const viability =
-      normalizeViability(
-        data.viabilidad
-      );
-
-
-    if (gaugeText) {
-
-      gaugeText.textContent =
-        `${viability}%`;
-
-    }
-
-
-    /* ---------------------------------------------
-       CLASIFICACIÓN
-       --------------------------------------------- */
-
-    if (resultBadge) {
-
-      if (viability >= 70) {
-
-        resultBadge.textContent =
-          "Perspectiva favorable";
-
-      } else if (viability >= 40) {
-
-        resultBadge.textContent =
-          "Requiere revisión";
-
-      } else {
-
-        resultBadge.textContent =
-          "Atención prioritaria";
-
-      }
-
-    }
-
-
-    /* ---------------------------------------------
-       TÍTULO
-       --------------------------------------------- */
+    lastDiagnosis = data;
 
     if (resultTitle) {
-
       resultTitle.textContent =
         data.titulo ||
         "Evaluación preliminar";
-
     }
 
+    if (resultBadge) {
+      const value = normalizeViability(data.viabilidad);
 
-    /* ---------------------------------------------
-       RESUMEN
-       --------------------------------------------- */
+      resultBadge.textContent =
+        value >= 70
+          ? "Favorable"
+          : value >= 40
+            ? "Requiere revisión"
+            : "Atención prioritaria";
+    }
 
     if (resultSummary) {
-
       resultSummary.textContent =
         data.resumen ||
-        "La evaluación identifica elementos que conviene revisar con mayor detalle.";
-
+        "La información proporcionada requiere una revisión jurídica más detallada.";
     }
 
+    renderFactors(data.factores);
 
-    /* ---------------------------------------------
-       FACTORES
-       --------------------------------------------- */
+    if (resultNext) {
+      resultNext.textContent =
+        data.siguiente_paso ||
+        "El siguiente paso es revisar el caso con Duarte.";
+    }
 
-    fillResultBlock(
-      resultFactors,
-      "Lo que identificamos",
-      data.factores ||
-      data.factors ||
-      data.identificado
-    );
+    renderGauge(data.viabilidad);
 
+    if (diagResult) {
+      diagResult.hidden = false;
 
-    /* ---------------------------------------------
-       SIGUIENTE PASO
-       --------------------------------------------- */
-
-    fillResultBlock(
-      resultNext,
-      "Siguiente paso",
-      data.siguiente_paso ||
-      data.next_step ||
-      "Conviene revisar el caso con mayor información antes de tomar una decisión."
-    );
-
+      setTimeout(() => {
+        diagResult.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }, 100);
+    }
   }
 
 
-  /* =====================================================
-     NORMALIZAR VIABILIDAD
-     ===================================================== */
+  async function analyzeCase() {
 
-  function normalizeViability(value) {
+    clearError();
 
-    let number =
-      Number(value);
+    if (!caseText) return;
 
+    const text = caseText.value.trim();
 
-    if (Number.isNaN(number)) {
-
-      const text =
-        String(value || "")
-          .toLowerCase();
-
-
-      if (
-        text.includes("alta") ||
-        text.includes("favorable")
-      ) {
-
-        return 80;
-
-      }
-
-
-      if (
-        text.includes("media") ||
-        text.includes("moderada")
-      ) {
-
-        return 55;
-
-      }
-
-
-      if (
-        text.includes("baja") ||
-        text.includes("desfavorable")
-      ) {
-
-        return 30;
-
-      }
-
-
-      return 50;
-
-    }
-
-
-    if (number <= 1) {
-
-      number *= 100;
-
-    }
-
-
-    return Math.max(
-      0,
-      Math.min(
-        100,
-        Math.round(number)
-      )
-    );
-
-  }
-
-
-  /* =====================================================
-     MOSTRAR BLOQUES DEL RESULTADO
-     ===================================================== */
-
-  function fillResultBlock(
-    container,
-    heading,
-    content
-  ) {
-
-    if (!container) {
-      return;
-    }
-
-
-    container.innerHTML = "";
-
-
-    const headingElement =
-      document.createElement("h4");
-
-
-    headingElement.textContent =
-      heading;
-
-
-    container.appendChild(
-      headingElement
-    );
-
-
-    if (!content) {
-
-      const paragraph =
-        document.createElement("p");
-
-
-      paragraph.textContent =
-        "No hay información suficiente para desarrollar este punto.";
-
-
-      container.appendChild(
-        paragraph
+    if (!text) {
+      showError(
+        "Cuéntanos brevemente qué está ocurriendo para poder evaluarlo."
       );
-
-
+      caseText.focus();
       return;
-
     }
 
+    if (text.length < 30) {
+      showError(
+        "Necesitamos un poco más de contexto. Describe brevemente qué ocurrió, quiénes intervienen y qué necesitas resolver."
+      );
+      caseText.focus();
+      return;
+    }
 
-    /* ---------------------------------------------
-       SI ES UN ARRAY
-       --------------------------------------------- */
+    if (text.length > 12000) {
+      showError(
+        "El texto es demasiado largo. Resume tu situación en un máximo de 12,000 caracteres."
+      );
+      caseText.focus();
+      return;
+    }
 
-    if (Array.isArray(content)) {
+    lastCase = text;
 
-      const list =
-        document.createElement("ul");
+    setLoading(true);
 
+    try {
 
-      content.forEach(item => {
-
-        const listItem =
-          document.createElement("li");
-
-
-        if (
-          typeof item === "string"
-        ) {
-
-          listItem.textContent =
-            item;
-
-        } else {
-
-          listItem.textContent =
-            JSON.stringify(item);
-
-        }
-
-
-        list.appendChild(
-          listItem
-        );
-
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          caso: text
+        })
       });
 
 
-      container.appendChild(
-        list
+      let data = null;
+
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          "El servidor no devolvió una respuesta válida."
+        );
+      }
+
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+          "No fue posible analizar el caso."
+        );
+      }
+
+
+      if (!data || typeof data !== "object") {
+        throw new Error(
+          "La respuesta del diagnóstico no es válida."
+        );
+      }
+
+
+      sessionStorage.setItem(
+        "duarte_diagnosis",
+        JSON.stringify({
+          caso: lastCase,
+          diagnosis: data,
+          created_at: new Date().toISOString()
+        })
       );
 
 
+      renderDiagnosis(data);
+
+      setupLeadCapture();
+
+    } catch (error) {
+
+      console.error("Error en diagnóstico:", error);
+
+      showError(
+        error?.message ||
+        "No fue posible realizar el diagnóstico. Inténtalo nuevamente."
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  }
+
+
+  if (diagForm) {
+    diagForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      analyzeCase();
+    });
+  }
+
+
+  if (analyzeBtn && !diagForm) {
+    analyzeBtn.addEventListener("click", analyzeCase);
+  }
+
+
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+
+      if (caseText) {
+        caseText.value = "";
+        caseText.focus();
+      }
+
+      if (diagResult) {
+        diagResult.hidden = true;
+      }
+
+      clearError();
+
+      lastDiagnosis = null;
+      lastCase = "";
+
+      sessionStorage.removeItem(
+        "duarte_diagnosis"
+      );
+
+      const leadSection =
+        document.getElementById("lead-capture");
+
+      if (leadSection) {
+        leadSection.hidden = true;
+      }
+
+    });
+  }
+
+
+  /* =========================================================
+     CAPTURA DE LEAD
+  ========================================================= */
+
+  function setupLeadCapture() {
+
+    const leadSection =
+      document.getElementById("lead-capture");
+
+    if (!leadSection) {
       return;
+    }
+
+    leadSection.hidden = false;
+
+    const leadForm =
+      document.getElementById("lead-form");
+
+    if (!leadForm) {
+      return;
+    }
+
+    /*
+      Evitamos registrar dos veces el mismo listener
+      si el usuario vuelve a ejecutar un diagnóstico.
+    */
+
+    if (leadForm.dataset.ready === "true") {
+      leadSection.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+      return;
+    }
+
+    leadForm.dataset.ready = "true";
+
+
+    leadForm.addEventListener("submit", async (event) => {
+
+      event.preventDefault();
+
+      const nameInput =
+        document.getElementById("lead-name");
+
+      const whatsappInput =
+        document.getElementById("lead-whatsapp");
+
+      const emailInput =
+        document.getElementById("lead-email");
+
+      const typeInput =
+        document.getElementById("lead-type");
+
+
+      const submitButton =
+        leadForm.querySelector(
+          'button[type="submit"]'
+        );
+
+
+      const leadError =
+        document.getElementById("lead-error");
+
+
+      if (leadError) {
+        leadError.textContent = "";
+        leadError.hidden = true;
+      }
+
+
+      const name =
+        nameInput?.value.trim() || "";
+
+      const whatsapp =
+        whatsappInput?.value.trim() || "";
+
+      const email =
+        emailInput?.value.trim() || "";
+
+      const userType =
+        typeInput?.value.trim() || "";
+
+
+      if (!name || !whatsapp || !userType) {
+
+        if (leadError) {
+          leadError.textContent =
+            "Completa tu nombre, WhatsApp y tipo de usuario.";
+          leadError.hidden = false;
+        }
+
+        return;
+      }
+
+
+      if (!lastCase || !lastDiagnosis) {
+
+        if (leadError) {
+          leadError.textContent =
+            "Primero realiza el diagnóstico de tu caso.";
+          leadError.hidden = false;
+        }
+
+        return;
+      }
+
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.dataset.originalText =
+          submitButton.textContent;
+
+        submitButton.textContent =
+          "Guardando…";
+      }
+
+
+      try {
+
+        const response = await fetch("/api/lead", {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+
+            name: name,
+
+            whatsapp: whatsapp,
+
+            email: email || null,
+
+            user_type: userType,
+
+            original_case: lastCase,
+
+            diagnosis: JSON.stringify(lastDiagnosis),
+
+            priority:
+              getPriority(lastDiagnosis),
+
+            origin:
+              "ai-diagnosis"
+
+          })
+        });
+
+
+        let data = null;
+
+        try {
+          data = await response.json();
+        } catch {
+          throw new Error(
+            "El servidor no devolvió una respuesta válida."
+          );
+        }
+
+
+        if (!response.ok || !data?.ok) {
+
+          throw new Error(
+            data?.error ||
+            "No fue posible guardar tus datos."
+          );
+
+        }
+
+
+        const leadId =
+          data.lead_id;
+
+
+        if (!leadId) {
+          throw new Error(
+            "No se recibió el identificador de la solicitud."
+          );
+        }
+
+
+        /*
+          Guardamos únicamente el ID en el navegador.
+          El contenido completo permanece en D1.
+        */
+
+        sessionStorage.setItem(
+          "duarte_lead_id",
+          leadId
+        );
+
+
+        sessionStorage.setItem(
+          "duarte_lead",
+          JSON.stringify({
+            lead_id: leadId,
+            created_at: new Date().toISOString()
+          })
+        );
+
+
+        showLeadSuccess(
+          leadSection,
+          leadForm,
+          leadId,
+          whatsapp
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Error guardando lead:",
+          error
+        );
+
+        if (leadError) {
+          leadError.textContent =
+            error?.message ||
+            "No fue posible guardar tus datos. Inténtalo nuevamente.";
+
+          leadError.hidden = false;
+        }
+
+      } finally {
+
+        if (submitButton) {
+          submitButton.disabled = false;
+
+          submitButton.textContent =
+            submitButton.dataset.originalText ||
+            "Hablar con Duarte";
+        }
+
+      }
+
+    });
+
+
+    leadSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+
+  }
+
+
+  function getPriority(diagnosis) {
+
+    if (!diagnosis) {
+      return null;
+    }
+
+    const value =
+      Number(diagnosis.viabilidad);
+
+    if (!Number.isNaN(value)) {
+
+      if (value < 40) {
+        return "urgente";
+      }
+
+      if (value < 70) {
+        return "revision";
+      }
+
+      return "normal";
+    }
+
+    return null;
+  }
+
+
+  function showLeadSuccess(
+    leadSection,
+    leadForm,
+    leadId,
+    whatsapp
+  ) {
+
+    leadForm.innerHTML = `
+
+      <div class="lead-success">
+
+        <span class="result-badge">
+          Solicitud registrada
+        </span>
+
+        <h3>
+          Tu diagnóstico ya está en manos de Duarte.
+        </h3>
+
+        <p>
+          Hemos guardado el contexto de tu evaluación
+          para que no tengas que volver a explicar todo
+          desde cero.
+        </p>
+
+        <p>
+          <strong>ID de solicitud: ${escapeHtml(leadId)}</strong>
+        </p>
+
+        <a
+          class="btn btn-primary"
+          id="whatsapp-contextual"
+          href="#"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Hablar con Duarte por WhatsApp
+        </a>
+
+      </div>
+
+    `;
+
+
+    const whatsappButton =
+      document.getElementById(
+        "whatsapp-contextual"
+      );
+
+
+    if (whatsappButton) {
+
+      const message =
+        `Hola, quiero revisar con Duarte mi diagnóstico IA. ID: ${leadId}`;
+
+      const phone =
+        "5210000000000";
+
+      whatsappButton.href =
+        `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+      whatsappButton.addEventListener(
+        "click",
+        () => {
+
+          /*
+            El número se sustituirá por el WhatsApp
+            definitivo de Duarte antes del lanzamiento.
+          */
+
+          trackEvent(
+            "whatsapp_lead_click",
+            {
+              lead_id: leadId
+            }
+          );
+
+        }
+      );
 
     }
 
 
-    /* ---------------------------------------------
-       SI ES TEXTO
-       --------------------------------------------- */
+    leadSection.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
 
-    const paragraph =
-      document.createElement("p");
+  }
 
 
-    if (
-      typeof content === "string"
-    ) {
+  function escapeHtml(value) {
 
-      paragraph.textContent =
-        content;
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
 
-    } else {
+  }
 
-      paragraph.textContent =
-        JSON.stringify(content);
 
+  /* =========================================================
+     ANALÍTICA BÁSICA
+  ========================================================= */
+
+  function trackEvent(name, data = {}) {
+
+    try {
+
+      if (typeof window.gtag === "function") {
+
+        window.gtag(
+          "event",
+          name,
+          data
+        );
+
+      }
+
+    } catch {
+      /*
+        La analítica nunca debe romper el sitio.
+      */
     }
 
+  }
 
-    container.appendChild(
-      paragraph
+
+  if (caseText) {
+
+    caseText.addEventListener(
+      "focus",
+      () => {
+        trackEvent(
+          "diagnosis_start"
+        );
+      },
+      {
+        once: true
+      }
     );
 
   }
 
 
-  /* =====================================================
-     MENSAJES DE ERROR
-     ===================================================== */
+  if (analyzeBtn) {
 
-  function showError(message) {
+    analyzeBtn.addEventListener(
+      "click",
+      () => {
 
-    if (!errorBox) {
-      return;
-    }
-
-
-    errorBox.textContent =
-      message;
-
-
-    errorBox.style.display =
-      "block";
-
-  }
-
-
-  function hideError() {
-
-    if (!errorBox) {
-      return;
-    }
-
-
-    errorBox.textContent =
-      "";
-
-
-    errorBox.style.display =
-      "none";
-
-  }
-
-
-  /* =====================================================
-     CAPTURA DEL LEAD
-     ===================================================== */
-
-  const leadForm =
-    document.getElementById("lead-form");
-
-
-  if (leadForm) {
-
-    leadForm.addEventListener(
-      "submit",
-      event => {
-
-        event.preventDefault();
-
-
-        const name =
-          document
-            .getElementById("lead-name")
-            ?.value
-            .trim();
-
-
-        const whatsapp =
-          document
-            .getElementById("lead-whatsapp")
-            ?.value
-            .trim();
-
-
-        const email =
-          document
-            .getElementById("lead-email")
-            ?.value
-            .trim();
-
-
-        const type =
-          document
-            .getElementById("lead-type")
-            ?.value;
-
-
-        /* ---------------------------------------------
-           VALIDACIÓN
-           --------------------------------------------- */
-
-        if (
-          !name ||
-          !whatsapp ||
-          !type
-        ) {
-
-          alert(
-            "Completa tu nombre, WhatsApp y tipo de usuario."
-          );
-
-          return;
-
-        }
-
-
-        /* ---------------------------------------------
-           CREAR ID DEL LEAD
-           --------------------------------------------- */
-
-        const leadId =
-          `DL-${Math.floor(
-            10000 +
-            Math.random() * 90000
-          )}`;
-
-
-        /* ---------------------------------------------
-           CREAR REGISTRO LOCAL
-
-           NOTA:
-           Esto es temporal.
-           La persistencia real se implementará
-           posteriormente en el backend.
-           --------------------------------------------- */
-
-        const lead = {
-
-          id: leadId,
-
-          name,
-
-          whatsapp,
-
-          email:
-            email || null,
-
-          type,
-
-          original_case:
-            currentDiagnosis?.query ||
-            caseText?.value ||
-            "",
-
-          diagnosis:
-            currentDiagnosis?.result ||
-            null,
-
-          created_at:
-            new Date().toISOString(),
-
-          origin:
-            "diagnostico_ia"
-
-        };
-
-
-        try {
-
-          sessionStorage.setItem(
-            "duarte_lead",
-            JSON.stringify(lead)
-          );
-
-        } catch {
-
-          /* El flujo de WhatsApp
-             continúa aunque sessionStorage
-             no esté disponible */
-
-        }
-
-
-        /* ---------------------------------------------
-           WHATSAPP
-
-           No enviamos el contenido jurídico
-           completo por WhatsApp.
-
-           Enviamos únicamente el ID para que
-           posteriormente el backend pueda
-           relacionarlo con el diagnóstico.
-           --------------------------------------------- */
-
-        const message =
-          `Hola, quiero revisar con Duarte mi diagnóstico IA. ID: ${leadId}`;
-
-
-        const whatsappUrl =
-          `https://wa.me/526461510992?text=${encodeURIComponent(
-            message
-          )}`;
-
-
-        window.open(
-          whatsappUrl,
-          "_blank",
-          "noopener"
+        trackEvent(
+          "diagnosis_submit"
         );
 
       }
     );
+
+  }
+
+
+  /* =========================================================
+     RECUPERAR DIAGNÓSTICO DE LA SESIÓN
+  ========================================================= */
+
+  try {
+
+    const saved =
+      sessionStorage.getItem(
+        "duarte_diagnosis"
+      );
+
+    if (saved) {
+
+      const parsed =
+        JSON.parse(saved);
+
+      if (
+        parsed &&
+        parsed.caso &&
+        parsed.diagnosis
+      ) {
+
+        lastCase =
+          parsed.caso;
+
+        lastDiagnosis =
+          parsed.diagnosis;
+
+      }
+
+    }
+
+  } catch {
+    /*
+      Si sessionStorage no está disponible,
+      simplemente continuamos.
+    */
 
   }
 
