@@ -234,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (diagResult) {
       diagResult.hidden = false;
+      diagResult.style.display = "block";
 
       setTimeout(() => {
         diagResult.scrollIntoView({
