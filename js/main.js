@@ -729,7 +729,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `Hola, quiero revisar con Duarte mi diagnóstico IA. ID: ${leadId}`;
 
       const phone =
-        "5210000000000";
+        "526461510992";
 
       whatsappButton.href =
         `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
