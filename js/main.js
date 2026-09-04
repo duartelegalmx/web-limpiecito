@@ -387,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
 
       const leadSection =
-        document.getElementById("lead-capture");
+        document.getElementById("continuar");
 
       if (leadSection) {
         leadSection.hidden = true;
@@ -404,7 +404,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupLeadCapture() {
 
     const leadSection =
-      document.getElementById("lead-capture");
+      document.getElementById("continuar");
 
     if (!leadSection) {
       return;
