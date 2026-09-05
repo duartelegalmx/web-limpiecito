@@ -1411,58 +1411,6 @@ p {
 }
 
 
-/* =====================================================
-   TESTIMONIALS
-   ===================================================== */
-
-.testimonials-section {
-  background: #fff;
-}
-
-.testimonial-wrap {
-  max-width: 800px;
-
-  margin: 40px auto 0;
-
-  text-align: center;
-
-  padding: 55px 20px;
-
-  border-top: 1px solid var(--line);
-
-  border-bottom: 1px solid var(--line);
-}
-
-.quote-mark {
-  font-family: var(--serif);
-
-  font-size: 80px;
-
-  line-height: .6;
-
-  color: var(--green);
-}
-
-blockquote {
-  font-family: var(--serif);
-
-  font-size: 30px;
-
-  line-height: 1.25;
-
-  margin: 20px auto 25px;
-}
-
-.testimonial-author {
-  font-size: 9px;
-
-  font-weight: 800;
-
-  letter-spacing: .08em;
-
-  color: #777;
-}
-
 
 /* =====================================================
    FINAL CTA
