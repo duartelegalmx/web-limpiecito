@@ -718,16 +718,60 @@ p {
   padding-left: 27px;
 }
 
-.business-services a {
+.business-services {
+  width: 100%;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
 
-  grid-template-columns: 28px 1fr;
+ .service-heading {
+  grid-column: 1 / -1;
+  padding: 1rem 1.25rem;
+  background: #2b2b2b;
+  color: #39ff14;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
 
-  gap: 9px;
+.business-services > a {
+  min-height: 190px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: #000;
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
 
-  padding: 12px 0;
+.business-services > a:hover {
+  background: #2b2b2b;
+  transform: translateY(-3px);
+}
 
-  border-bottom: 1px solid var(--line);
+.business-services > a b {
+  color: #39ff14;
+  font-size: 0.8rem;
+}
+
+.business-services > a span {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.business-services > a strong {
+  font-size: 1.05rem;
+}
+
+.business-services > a small {
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.5;
 }
 
 .business-services a:last-child {
@@ -1726,6 +1770,19 @@ p {
 
     bottom: 14px;
   }
+  
+  .business-services {
+  grid-template-columns: 1fr;
+}
+
+.business-services .service-heading {
+  grid-column: 1;
+}
+
+.business-services > a {
+  min-height: 150px;
+}
+  
   .founder-intro {
     grid-template-columns: 1fr;
     gap: 35px;
