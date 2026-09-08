@@ -51,11 +51,11 @@
     </a>
 
     <nav class="main-nav" id="main-nav">
+     <a href="#diagnostico">Diagnóstico</a>
       <a href="#servicios">Servicios</a>
       <a href="#metodo">Método</a>
       <a href="#tecnologia">Tecnología</a>
-      <a href="#diagnostico">Diagnóstico</a>
-    </nav>
+          </nav>
 
     <div class="header-actions">
 
@@ -148,6 +148,225 @@
         <div class="portrait-caption">
           ESTRATEGIA JURÍDICA<br>
           PARA QUIENES DECIDEN
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+    <!-- =====================================================
+       AI DIAGNOSIS
+       ===================================================== -->
+
+  <section
+    class="section diagnosis-section"
+    id="diagnostico"
+  >
+
+    <div class="container diagnosis-layout">
+
+      <div class="diagnosis-intro reveal">
+
+        <div class="section-label">
+          <span></span>
+          DIAGNÓSTICO IA
+        </div>
+
+        <h2>
+          Antes de contratar a un abogado,
+          entiende mejor tu problema.
+        </h2>
+
+        <p>
+          Cuéntanos brevemente qué está ocurriendo.
+          La evaluación es preliminar y no sustituye
+          una consulta jurídica profesional.
+        </p>
+
+      </div>
+
+
+      <div class="diagnosis-box reveal">
+
+        <form id="diag-form">
+
+          <textarea
+            id="case-text"
+            maxlength="5000"
+            required
+            placeholder="Cuéntanos qué está pasando. No necesitas utilizar lenguaje jurídico."
+          ></textarea>
+
+
+          <div class="diagnosis-bar">
+
+            <span id="status-label">
+              Evaluación preliminar asistida por IA.
+            </span>
+
+            <button
+              id="analyze-btn"
+              class="btn btn-dark"
+              type="submit"
+            >
+              Analizar mi caso
+              <span>→</span>
+            </button>
+
+          </div>
+
+        </form>
+
+
+        <div
+          id="diag-error"
+          class="diag-error"
+          role="alert"
+        ></div>
+
+
+        <div
+          id="diag-result"
+          class="diag-result"
+        >
+
+          <div class="result-header">
+
+            <div class="result-score">
+
+              <span id="gauge-text">
+                0%
+              </span>
+
+              <small>
+                orientación
+              </small>
+
+            </div>
+
+
+            <div>
+
+              <span
+                id="result-badge"
+                class="result-badge"
+              >
+                Evaluación preliminar
+              </span>
+
+              <h3 id="result-title">
+                Resultado
+              </h3>
+
+              <p id="result-summary"></p>
+
+            </div>
+
+          </div>
+
+
+          <div
+            id="result-factors"
+            class="result-block"
+          ></div>
+
+
+          <div
+            id="result-next"
+            class="result-block"
+          ></div>
+
+
+          <section
+            id="continuar"
+            class="lead-box"
+            hidden
+          >
+
+            <div class="section-label light">
+              <span></span>
+              SIGUIENTE PASO
+            </div>
+
+            <h3>
+              ¿Quieres hablar con Duarte sobre tu diagnóstico?
+            </h3>
+
+            <p>
+              Conservaremos el contexto de esta evaluación
+              para que no tengas que volver a explicar todo
+              desde cero.
+            </p>
+
+
+            <form
+              id="lead-form"
+              class="lead-form"
+            >
+
+              <input
+                id="lead-name"
+                type="text"
+                placeholder="Tu nombre"
+                autocomplete="name"
+                required
+              >
+
+
+              <input
+                id="lead-whatsapp"
+                type="tel"
+                placeholder="WhatsApp"
+                autocomplete="tel"
+                required
+              >
+
+
+              <input
+                id="lead-email"
+                type="email"
+                placeholder="Correo electrónico (opcional)"
+                autocomplete="email"
+              >
+
+
+              <select
+                id="lead-type"
+                required
+              >
+
+                <option value="">
+                  ¿Cómo te identificas?
+                </option>
+
+                <option value="lider_empresarial">
+                  Líder empresarial
+                </option>
+
+                <option value="persona_particular">
+                  Persona particular
+                </option>
+
+                <option value="representante_organizacion">
+                  Representante de una organización
+                </option>
+
+              </select>
+
+
+              <button
+                class="btn btn-green full"
+                type="submit"
+              >
+                Hablar con Duarte →
+              </button>
+
+            </form>
+
+          </section>
+
         </div>
 
       </div>
@@ -790,227 +1009,6 @@
     </div>
 
   </section>
-
-
-  <!-- =====================================================
-       AI DIAGNOSIS
-       ===================================================== -->
-
-  <section
-    class="section diagnosis-section"
-    id="diagnostico"
-  >
-
-    <div class="container diagnosis-layout">
-
-      <div class="diagnosis-intro reveal">
-
-        <div class="section-label">
-          <span></span>
-          DIAGNÓSTICO IA
-        </div>
-
-        <h2>
-          Antes de contratar a un abogado,
-          entiende mejor tu problema.
-        </h2>
-
-        <p>
-          Cuéntanos brevemente qué está ocurriendo.
-          La evaluación es preliminar y no sustituye
-          una consulta jurídica profesional.
-        </p>
-
-      </div>
-
-
-      <div class="diagnosis-box reveal">
-
-        <form id="diag-form">
-
-          <textarea
-            id="case-text"
-            maxlength="5000"
-            required
-            placeholder="Cuéntanos qué está pasando. No necesitas utilizar lenguaje jurídico."
-          ></textarea>
-
-
-          <div class="diagnosis-bar">
-
-            <span id="status-label">
-              Evaluación preliminar asistida por IA.
-            </span>
-
-            <button
-              id="analyze-btn"
-              class="btn btn-dark"
-              type="submit"
-            >
-              Analizar mi caso
-              <span>→</span>
-            </button>
-
-          </div>
-
-        </form>
-
-
-        <div
-          id="diag-error"
-          class="diag-error"
-          role="alert"
-        ></div>
-
-
-        <div
-          id="diag-result"
-          class="diag-result"
-        >
-
-          <div class="result-header">
-
-            <div class="result-score">
-
-              <span id="gauge-text">
-                0%
-              </span>
-
-              <small>
-                orientación
-              </small>
-
-            </div>
-
-
-            <div>
-
-              <span
-                id="result-badge"
-                class="result-badge"
-              >
-                Evaluación preliminar
-              </span>
-
-              <h3 id="result-title">
-                Resultado
-              </h3>
-
-              <p id="result-summary"></p>
-
-            </div>
-
-          </div>
-
-
-          <div
-            id="result-factors"
-            class="result-block"
-          ></div>
-
-
-          <div
-            id="result-next"
-            class="result-block"
-          ></div>
-
-
-          <section
-            id="continuar"
-            class="lead-box"
-            hidden
-          >
-
-            <div class="section-label light">
-              <span></span>
-              SIGUIENTE PASO
-            </div>
-
-            <h3>
-              ¿Quieres hablar con Duarte sobre tu diagnóstico?
-            </h3>
-
-            <p>
-              Conservaremos el contexto de esta evaluación
-              para que no tengas que volver a explicar todo
-              desde cero.
-            </p>
-
-
-            <form
-              id="lead-form"
-              class="lead-form"
-            >
-
-              <input
-                id="lead-name"
-                type="text"
-                placeholder="Tu nombre"
-                autocomplete="name"
-                required
-              >
-
-
-              <input
-                id="lead-whatsapp"
-                type="tel"
-                placeholder="WhatsApp"
-                autocomplete="tel"
-                required
-              >
-
-
-              <input
-                id="lead-email"
-                type="email"
-                placeholder="Correo electrónico (opcional)"
-                autocomplete="email"
-              >
-
-
-              <select
-                id="lead-type"
-                required
-              >
-
-                <option value="">
-                  ¿Cómo te identificas?
-                </option>
-
-                <option value="lider_empresarial">
-                  Líder empresarial
-                </option>
-
-                <option value="persona_particular">
-                  Persona particular
-                </option>
-
-                <option value="representante_organizacion">
-                  Representante de una organización
-                </option>
-
-              </select>
-
-
-              <button
-                class="btn btn-green full"
-                type="submit"
-              >
-                Hablar con Duarte →
-              </button>
-
-            </form>
-
-          </section>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
 
   <!-- =====================================================
        AUTHORITY
